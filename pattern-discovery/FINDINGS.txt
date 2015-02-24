@@ -1,0 +1,35 @@
+Finding from Reuters-21578:
+
+    lhs                                   rhs                                           support confidence       lift
+
+3   {ORG: GM}                          => {ORG: General Motors Corp}                0.003590565  0.8441558 148.366536
+12  {ORG: GATT}                        => {ORG: Tariffs and Trade}                  0.004087720  0.6788991 146.310834
+18  {ORG: IMF}                         => {ORG: International Monetary Fund}        0.004861073  0.7272727  87.772121
+26  {ORG: SEC}                         => {ORG: Securities and Exchange Commission} 0.006131580  0.8283582  25.546454
+12  {ORG: GATT}                        => {ORG: Tariffs and Trade}                  0.004087720  0.6788991 146.310834
+
+NOTE: ORG => ORG - can be helpful in resolving abbreviations
+
+17  {ORG: GATT}                        => {LOC: U.S.}                               0.004474397  0.7431193   4.846069
+40  {PER: Reagan}                      => {LOC: U.S.}                               0.012097442  0.6016484   3.923501
+
+NOTE: PER => LOC / ORG => LOC - may help in associating PER/ORG to a certain location
+
+22  {PER: Paul Volcker}                => {ORG: Federal Reserve Board}              0.003369607  0.5865385  78.074307
+33  {ORG: U.S. Treasury}               => {PER: James Baker}                        0.004750594  0.5341615  48.349627
+
+NOTE: PER => ORG / ORG => PER - can be helpful for disambiguation in article tagging
+
+41  {LOC: Tokyo}                       => {LOC: Japan}                              0.010605977  0.6173633  11.927565
+42  {LOC: Tokyo}                       => {LOC: U.S.}                               0.008948793  0.5209003   3.396923
+43  {LOC: Canada}                      => {LOC: U.S.}                               0.013588908  0.5430464   3.541343
+44  {LOC: Washington}                  => {LOC: U.S.}                               0.016240402  0.6475771   4.223014
+
+NOTE: LOC => LOC (can be very tricky, may provide false info, should be used with caution)
+
+227 {LOC: Britain,
+     LOC: Canada,
+     LOC: U.S.,
+     LOC: West Germany}                => {LOC: Japan}                              0.003038170  1.0000000  19.320171
+
+NOTE: Britain + Canada + U.S. + West Germany + Japan - most likely is "Group of Six", nowadays known as G7

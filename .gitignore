@@ -4,7 +4,7 @@
 IntelliJ/
 DataMiningProject/
 .idea/
-/logs/
+*/data/
 
 # sbt specific
 .cache
