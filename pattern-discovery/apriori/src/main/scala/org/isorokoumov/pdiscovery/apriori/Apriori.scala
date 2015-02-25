@@ -12,14 +12,16 @@ import scala.io.Source
  */
 object Apriori extends App {
 
-  val minimalSupport = 0.003
-  val minConfidence = 0.5
-  // not used yet
+  val minimalSupport = 0.003f
+  val minConfidence = 0.5f
   val minLength = 2
   val maxLength = 7
 
-  type Itemset = SortedSet[String]
+  type Item = String
+  type Itemset = SortedSet[Item]
   type FrequentItemsets = Map[Itemset, Int]
+
+  case class AssociationRule(lhs: Itemset, rhs: Item, support: Float, confidence: Float, kulc: Float, ir: Float)
 
   def readTransactions(): Seq[Itemset] = {
     val source = Source.fromFile(new File("./data/ner/reuters21578.ner"))
@@ -30,14 +32,11 @@ object Apriori extends App {
     }
   }
 
-  val transactions = readTransactions()
-  val minimalFrequency = (transactions.size * minimalSupport).toInt
-
-  def findFrequentOneItemsets(): FrequentItemsets = {
+  def findFrequentOneItemsets(transactions: Seq[Itemset], minimalFrequency: Int): FrequentItemsets = {
     transactions.foldLeft(Map.empty[Itemset, Int]) { (freqOneItemsets, transaction) =>
       transaction.foldLeft(freqOneItemsets) { (foundOneItemsets, item) =>
-        val itemSet = SortedSet(item)
-        foundOneItemsets.updated(itemSet, foundOneItemsets.getOrElse(itemSet, 0) + 1)
+        val oneItemSet = SortedSet(item)
+        foundOneItemsets.updated(oneItemSet, foundOneItemsets.getOrElse(oneItemSet, 0) + 1)
       }
     }.filter(_._2 >= minimalFrequency)
   }
@@ -56,19 +55,19 @@ object Apriori extends App {
   }
 
   @tailrec
-  def mineFreqItemsets(k: Int,
+  def mineFreqItemsets(transactions: Seq[Itemset],
+                       minimalFrequency: Int,
+                       k: Int,
                        freqKMinusOneItemsets: FrequentItemsets,
-                       foundFreqItemsets: List[FrequentItemsets]): List[FrequentItemsets] = {
-    if (freqKMinusOneItemsets.isEmpty) {
-      foundFreqItemsets.tail
-    } else if (k > maxLength) {
-      foundFreqItemsets
+                       allFoundFreqItemsets: FrequentItemsets): FrequentItemsets = {
+    if (k > maxLength || freqKMinusOneItemsets.isEmpty) {
+      allFoundFreqItemsets
     } else {
       println(s"k: $k, (k-1) freq itemsets: ${freqKMinusOneItemsets.size}")
       val aprioriCandidates = generateAprioriCandidates(freqKMinusOneItemsets)
       println(s"candidates: ${aprioriCandidates.size}")
       if (aprioriCandidates.isEmpty) {
-        foundFreqItemsets
+        allFoundFreqItemsets
       } else {
         val freqItems = aprioriCandidates.map(_._1).flatten.toSet
         val freqKItemsets = transactions.foldLeft(aprioriCandidates) { (aprioriKItemsets, transaction) =>
@@ -81,15 +80,38 @@ object Apriori extends App {
             }
           }
         }.filter(_._2 >= minimalFrequency)
-        mineFreqItemsets(k + 1, freqKItemsets, freqKItemsets :: foundFreqItemsets)
+        mineFreqItemsets(transactions, minimalFrequency, k + 1, freqKItemsets, freqKItemsets ++ allFoundFreqItemsets)
       }
     }
   }
 
-  val freqOneItemsets = findFrequentOneItemsets()
-  mineFreqItemsets(2, freqOneItemsets, List(freqOneItemsets)).flatten.
-    filter(_._1.size >= minLength).sortBy(_._1.size).foreach {
-    case (itemset, freq) => println(itemset.mkString(" - ") + " : " + freq.toDouble / transactions.size)
+  def mineFreqItemsets(transactions: Seq[Itemset]): FrequentItemsets = {
+    val minimalFrequency = (transactions.size * minimalSupport).toInt
+    val freqOneItemsets = findFrequentOneItemsets(transactions, minimalFrequency)
+    mineFreqItemsets(transactions, minimalFrequency, 2, freqOneItemsets, freqOneItemsets)
+  }
+
+  def generateAssociationRules(freqItemsets: FrequentItemsets, transactionsCount: Int): Seq[AssociationRule] = {
+    freqItemsets.toSeq.filter(_._1.size >= minLength).sortBy(_._1.size).flatMap { case (itemset, freq) =>
+      itemset.flatMap { item =>
+        val lhs = itemset - item
+        val conf = freq.toFloat / freqItemsets(lhs)
+        if (conf > minConfidence) {
+          // XXX calculate Kulczynski and Imbalance Ratio
+          Some(AssociationRule(lhs, item, freq.toFloat / transactionsCount, conf, 0f, 0f))
+        } else {
+          None
+        }
+      }
+    }
+  }
+
+  val transactions = readTransactions()
+  val freqItemsets = mineFreqItemsets(transactions)
+  generateAssociationRules(freqItemsets, transactions.size).foreach { rule =>
+    val lhs = "{" + rule.lhs.mkString(", ") + "}"
+    val rhs = "{" + rule.rhs + "}"
+    println(f"$lhs%-60s => $rhs%-40s      ${rule.support}%1.7f       ${rule.confidence}%1.7f")
   }
 
 }
