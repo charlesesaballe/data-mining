@@ -14,6 +14,7 @@ object Apriori extends App {
 
   val minimalSupport = 0.003f
   val minConfidence = 0.5f
+  val minKulczynski = 0.3f // in fact, most interesting rules are should have kulc > 0.6
   val minLength = 2
   val maxLength = 7
 
@@ -21,7 +22,7 @@ object Apriori extends App {
   type Itemset = SortedSet[Item]
   type FrequentItemsets = Map[Itemset, Int]
 
-  case class AssociationRule(lhs: Itemset, rhs: Item, support: Float, confidence: Float, kulc: Float, ir: Float)
+  case class AssociationRule(lhs: Itemset, rhs: Itemset, support: Float, confidence: Float, kulc: Float, ir: Float)
 
   def readTransactions(): Seq[Itemset] = {
     val source = Source.fromFile(new File("./data/ner/reuters21578.ner"))
@@ -95,10 +96,16 @@ object Apriori extends App {
     freqItemsets.toSeq.filter(_._1.size >= minLength).sortBy(_._1.size).flatMap { case (itemset, freq) =>
       itemset.flatMap { item =>
         val lhs = itemset - item
-        val conf = freq.toFloat / freqItemsets(lhs)
-        if (conf > minConfidence) {
-          // XXX calculate Kulczynski and Imbalance Ratio
-          Some(AssociationRule(lhs, item, freq.toFloat / transactionsCount, conf, 0f, 0f))
+        val rhs = SortedSet(item)
+        val lhsFreq = freqItemsets(lhs)
+        val rhsFreq = freqItemsets(rhs)
+        val pLeftWhenRight = freq.toFloat / rhsFreq
+        val pRightWhenLeft = freq.toFloat / lhsFreq
+        val conf = pRightWhenLeft
+        val kulc = (pLeftWhenRight + pRightWhenLeft) / 2
+        val ir = math.abs(lhsFreq - rhsFreq) / (lhsFreq + rhsFreq - freq.toFloat)
+        if (conf > minConfidence && kulc > minKulczynski) {
+          Some(AssociationRule(lhs, rhs, freq.toFloat / transactionsCount, conf, kulc, ir))
         } else {
           None
         }
@@ -110,8 +117,9 @@ object Apriori extends App {
   val freqItemsets = mineFreqItemsets(transactions)
   generateAssociationRules(freqItemsets, transactions.size).foreach { rule =>
     val lhs = "{" + rule.lhs.mkString(", ") + "}"
-    val rhs = "{" + rule.rhs + "}"
-    println(f"$lhs%-60s => $rhs%-40s      ${rule.support}%1.7f       ${rule.confidence}%1.7f")
+    val rhs = "{" + rule.rhs.mkString(", ") + "}"
+    println(f"$lhs%-60s => $rhs%-40s      ${rule.support}%1.7f       ${rule.confidence}%1.7f" +
+      f"      ${rule.kulc}%1.7f       ${rule.ir}%1.7f")
   }
 
 }
