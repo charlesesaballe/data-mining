@@ -1,4 +1,4 @@
-package org.isorokoumov.pdiscovery.apriori
+package org.isorokoumov.pdiscovery.itemset
 
 import java.io.File
 
@@ -14,7 +14,7 @@ object Apriori extends App {
 
   val minimalSupport = 0.003f
   val minConfidence = 0.5f
-  val minKulczynski = 0.3f // in fact, most interesting rules are should have kulc > 0.6
+  val minKulczynski = 0.3f // in fact, the most interesting rules are should have kulc > 0.6
   val minLength = 2
   val maxLength = 7
 
@@ -25,7 +25,7 @@ object Apriori extends App {
   case class AssociationRule(lhs: Itemset, rhs: Itemset, support: Float, confidence: Float, kulc: Float, ir: Float)
 
   def readTransactions(): Seq[Itemset] = {
-    val source = Source.fromFile(new File("./data/ner/reuters21578.ner"))
+    val source = Source.fromFile(new File("./data/processed/reuters21578.ner"))
     try {
       source.getLines().toArray.map(line => SortedSet(line.split(","): _*))
     } finally {

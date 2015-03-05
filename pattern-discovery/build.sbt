@@ -4,23 +4,33 @@ lazy val commonSettings = Seq(
   scalaVersion := "2.11.5"
 )
 
-lazy val ner = (project in file("ner")).
+// module with NLP-related scripts
+lazy val nlp = (project in file("nlp")).
   settings(commonSettings: _*).
   settings(
-    name := "ner",
+    name := "nlp",
     libraryDependencies ++= Seq(
       "org.scalanlp" %% "english"  % "2015.2.19"
     )
   )
 
-lazy val apriori = (project in file("apriori")).
+// module with itemset pattern mining experiments
+lazy val itemset = (project in file("itemset")).
   settings(commonSettings: _*).
   settings(
-    name := "apriori"
+    name := "itemset"
   )
 
+// module with sequential pattern mining experiments
+lazy val sequential = (project in file("sequential")).
+  settings(commonSettings: _*).
+  settings(
+    name := "sequential"
+  )
+
+// root module
 lazy val patternDiscovery = (project in file(".")).
   settings(commonSettings: _*).
   settings(
     name := "pattern-discovery"
-  ).dependsOn(ner, apriori).aggregate(ner, apriori)
+  ).dependsOn(nlp, itemset, sequential).aggregate(nlp, itemset, sequential)

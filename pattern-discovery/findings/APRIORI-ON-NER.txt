@@ -1,4 +1,4 @@
-Finding from Reuters-21578:
+Findings from running Apriori on NER itemsets from Reuters-21578:
 
     lhs                                   rhs                                           support confidence       lift
 
