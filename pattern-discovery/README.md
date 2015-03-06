@@ -30,7 +30,7 @@ For various [NLP](http://en.wikipedia.org/wiki/Natural_language_processing) task
 1. Run `sbt "run-main org.isorokoumov.pdiscovery.nlp.Reuters21578NER"`
 which will generate named entities for articles from reuters21578.
 2. Start R in directory `rscripts` and call `source("apriori.R")` which uses `arules` package
-OR alternatively use `sbt "run-main org.isorokoumov.pdiscovery.itemset.Apriori"`
+OR alternatively use `sbt "run-main org.isorokoumov.pdiscovery.itemset.AprioriReuters21578"`
 (Scala implementation also counts Kulczycki and IR for each association rule it produces).
 
 #### SPADE or GSP on sentences as sequences of words from Reuters-21578

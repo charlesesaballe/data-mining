@@ -1,7 +1,10 @@
 lazy val commonSettings = Seq(
   organization := "org.isorokoumov.pdiscovery",
   version := "1.0",
-  scalaVersion := "2.11.5"
+  scalaVersion := "2.11.5",
+  libraryDependencies ++= Seq(
+    "org.scalatest" %% "scalatest" % "2.2.4" % "test"
+  )
 )
 
 // module with NLP-related scripts
@@ -10,7 +13,7 @@ lazy val nlp = (project in file("nlp")).
   settings(
     name := "nlp",
     libraryDependencies ++= Seq(
-      "org.scalanlp" %% "english"  % "2015.2.19"
+      "org.scalanlp" %% "english" % "2015.2.19"
     )
   )
 
