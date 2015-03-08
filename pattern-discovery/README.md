@@ -38,4 +38,4 @@ OR alternatively use `sbt "run-main org.isorokoumov.pdiscovery.itemset.AprioriRe
 1. Run `sbt "run-main org.isorokoumov.pdiscovery.nlp.Reuters21578Words"`
 which will generate named entities for articles from reuters21578.
 2. Start R in directory `rscripts` and call `source("spade_on_words.R")` which uses `arules`/`arulesSequences` packages.
-I have not implemented Scala version for sequential pattern mining.
+I have implemented Scala version for sequential pattern mining but my implementation of GSP can't cope with large datasets so don't reference it here.
