@@ -4,6 +4,8 @@ import scala.annotation.tailrec
 import scala.collection.immutable.SortedSet
 
 /**
+ * Simplistically implements Apriori algorithm.
+ * http://rakesh.agrawal-family.com/papers/vldb94apriori.pdf
  * @author ilya40umov
  */
 class Apriori[Item](val minimalSupport: Float,
@@ -11,6 +13,7 @@ class Apriori[Item](val minimalSupport: Float,
                     val minKulczynski: Float,
                     val minLength: Int,
                     val maxLength: Int)(implicit itemOrdering: Ordering[Item]) {
+
   import itemOrdering._
 
   type Itemset = SortedSet[Item]
@@ -47,10 +50,10 @@ class Apriori[Item](val minimalSupport: Float,
 
   @tailrec
   private def mineFreqItemsets(transactions: Seq[Itemset],
-                             minimalFrequency: Int,
-                             k: Int,
-                             freqKMinusOneItemsets: FrequentItemsets,
-                             allFoundFreqItemsets: FrequentItemsets): FrequentItemsets = {
+                               minimalFrequency: Int,
+                               k: Int,
+                               freqKMinusOneItemsets: FrequentItemsets,
+                               allFoundFreqItemsets: FrequentItemsets): FrequentItemsets = {
     if (k > maxLength || freqKMinusOneItemsets.isEmpty) {
       allFoundFreqItemsets
     } else {
@@ -89,8 +92,8 @@ class Apriori[Item](val minimalSupport: Float,
         val rhs = SortedSet(item)(itemOrdering)
         val lhsFreq = freqItemsets.getOrElse(lhs, 0)
         val rhsFreq = freqItemsets.getOrElse(rhs, 0)
-        val pLeftWhenRight = if (rhsFreq !=0) freq.toFloat / rhsFreq else 0
-        val pRightWhenLeft = if (lhsFreq !=0) freq.toFloat / lhsFreq else 0
+        val pLeftWhenRight = if (rhsFreq != 0) freq.toFloat / rhsFreq else 0
+        val pRightWhenLeft = if (lhsFreq != 0) freq.toFloat / lhsFreq else 0
         val sup = freq.toFloat / transactionsCount
         val conf = pRightWhenLeft
         val kulc = (pLeftWhenRight + pRightWhenLeft) / 2
